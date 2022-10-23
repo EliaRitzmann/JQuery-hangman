@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Hangman</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="../node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="/src/css/main.css" />
+  </head>
+  <body>
+  <main class="d-flex flex-column align-items-center">
+    <h1>Hangman</h1>
+    <canvas
+        id="myCanvas"
+        width="1000"
+        height="400"
+        style="border: 1px solid #000000"
+      >
+      </canvas>
+
+    <div class="container" >
+      <div class="form-group">
+        <label for="input">guess</label>
+        <input type="text" class="form-control" id="input" />
+      </div>
+      <button class="btn btn-primary" id="guess">Submit</button>
+    </fo>
+  </main>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="../node_modules/jquery/dist/jquery.js"></script>
+  <script src="../node_modules/popper.js/dist/popper.min.js"></script>
+  <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(async function () {
+      var canvas = document.getElementById("myCanvas");
+      var ctx = canvas.getContext("2d");
+      
+      var word = ""
+      var guessedChar = []
+      var wrongGuesses = 0;
+      var rightGuesses = 0;
+
+      //get a random word
+      fetch("https://random-word-api.herokuapp.com/word?lang=de").then(async (data) => {
+        const json = await data.json()
+        console.log(json)
+        word = json[0].toLowerCase()
+        refresh()
+      })
+
+      function guess(){
+        if($("#input").val() == "" || guessedChar.includes($("#input").val()) || $("#input").val().length != 1){
+          console.log("bad guess")
+          return
+        }
+
+        guessedChar.push($("#input").val())
+        console.log($("#input").val())
+
+        if(word.includes($("#input").val())){
+          rightGuesses++;
+          
+        }else{
+          wrongGuesses++;
+        }
+
+        if(rightGuesses == word.length){
+          guessedChar = ["you win :)"]
+        }
+
+        if(wrongGuesses == 6){
+          guessedChar = ["you lose :( word:", word]
+          
+        }
+        
+        $("#input").val("")
+        refresh();
+      }
+
+      $("#guess").click(function(){
+        guess()
+      })
+
+      $("#input").keypress(function(e){
+        if(e.which == 13) {
+      guess()
+  }
+      })
+
+      const setup = () => {
+        refresh()
+      };
+
+
+      function refresh(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        //line
+        ctx.moveTo(0, 300)
+        ctx.lineTo(1000, 300)
+        ctx.stroke()
+
+        //text
+        ctx.font = "30px Arial"
+        ctx.textAlign = "center";
+        var output = " "
+
+        for (let i = 0; i < word.length; i++) {
+          if(guessedChar.includes(word[i])){
+            output += word[i] + " "
+          }else{
+            output += "_ "
+          }
+        }
+        ctx.fillText(output, 500, 340);
+
+        output = "used chars: ";
+        for (let i = 0; i < guessedChar.length; i++) {
+          output += guessedChar[i]
+        }
+
+        ctx.font = "24px Arial"
+        ctx.fillText(output, 500, 380);
+
+        //man
+        if(wrongGuesses > 0){
+          ctx.beginPath()
+          ctx.arc(500, 50, 40, 0, Math.PI * 2, false)
+          ctx.stroke();
+        }
+        if(wrongGuesses > 1){
+          ctx.beginPath()
+          ctx.moveTo(500, 90)
+          ctx.lineTo(500, 190)
+          ctx.stroke();
+        }
+        if(wrongGuesses > 2){
+          ctx.beginPath()
+          ctx.moveTo(500, 100)
+          ctx.lineTo(450, 180)
+          ctx.stroke();
+        }
+        if(wrongGuesses > 3){
+          ctx.beginPath()
+          ctx.moveTo(500, 100)
+          ctx.lineTo(550, 180)
+          ctx.stroke();
+        }
+        if(wrongGuesses > 4){
+          ctx.beginPath()
+          ctx.moveTo(500, 190)
+          ctx.lineTo(450, 280)
+          ctx.stroke();
+        }
+        if(wrongGuesses > 5){
+          ctx.beginPath()
+          ctx.moveTo(500, 190)
+          ctx.lineTo(550, 280)
+          ctx.stroke();
+        }
+      }
+
+
+    });
+  </script>
+</body>
+</html>
